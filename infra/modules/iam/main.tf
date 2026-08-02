@@ -2,6 +2,9 @@ locals {
   prefix = "${var.project}-${var.env}"
 }
 
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_policy_document" "lambda_assume" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -41,7 +44,7 @@ resource "aws_iam_role_policy" "lambda_inline" {
         Sid      = "SSMParameters"
         Effect   = "Allow"
         Action   = ["ssm:GetParameter", "ssm:GetParametersByPath"]
-        Resource = ["arn:aws:ssm:*:*:parameter${var.ssm_parameter_prefix}/*"]
+        Resource = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_parameter_prefix}/*"]
       },
       {
         Sid      = "StepFunctions"
@@ -50,10 +53,12 @@ resource "aws_iam_role_policy" "lambda_inline" {
         Resource = var.step_functions_arns
       },
       {
+        # Log groups are pre-created by the lambda module, so the role only
+        # needs to write streams/events — scoped to this env's function groups.
         Sid      = "CloudWatchLogs"
         Effect   = "Allow"
-        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-        Resource = ["arn:aws:logs:*:*:*"]
+        Action   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+        Resource = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.prefix}-*:*"]
       }
     ]
   })
@@ -87,10 +92,13 @@ resource "aws_iam_role_policy" "sfn_inline" {
         Sid      = "InvokeLambda"
         Effect   = "Allow"
         Action   = ["lambda:InvokeFunction"]
-        Resource = ["arn:aws:lambda:*:*:function:${local.prefix}-*"]
+        Resource = ["arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${local.prefix}-*"]
       },
       {
-        Sid    = "CloudWatchLogs"
+        # Step Functions log-delivery management APIs do not support
+        # resource-level permissions, so "*" is required by the service.
+        # https://docs.aws.amazon.com/step-functions/latest/dg/cw-logs.html
+        Sid    = "CloudWatchLogDelivery"
         Effect = "Allow"
         Action = [
           "logs:CreateLogDelivery", "logs:GetLogDelivery", "logs:UpdateLogDelivery",
@@ -100,6 +108,7 @@ resource "aws_iam_role_policy" "sfn_inline" {
         Resource = ["*"]
       },
       {
+        # The X-Ray write APIs likewise only support "*" as the resource.
         Sid    = "XRay"
         Effect = "Allow"
         Action = ["xray:PutTraceSegments", "xray:PutTelemetryRecords", "xray:GetSamplingRules",

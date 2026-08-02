@@ -12,7 +12,9 @@ resource "random_password" "db" {
 # ── Secrets Manager ───────────────────────────────────────────────────────────
 
 resource "aws_secretsmanager_secret" "db" {
-  name                    = "${local.prefix}/db/credentials"
+  name = "${local.prefix}/db/credentials"
+  # Encrypted at rest with the AWS-managed key (aws/secretsmanager) by default.
+  # Set kms_key_id here to use a customer-managed key.
   recovery_window_in_days = 7
   tags                    = { Name = "${local.prefix}-db-secret" }
 }
@@ -43,6 +45,11 @@ resource "aws_rds_cluster_parameter_group" "main" {
   parameter {
     name  = "log_min_duration_statement"
     value = "1000"
+  }
+  # Reject any non-TLS client connection at the database.
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
   }
 }
 

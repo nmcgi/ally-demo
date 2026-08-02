@@ -17,7 +17,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const correlationId = randomUUID();
+    // Reuse the per-request correlation ID from CorrelationMiddleware so the
+    // error log and the client response share one trace identifier.
+    const correlationId = request.correlationId ?? randomUUID();
 
     const status =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;

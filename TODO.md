@@ -117,12 +117,12 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 11 — Observability & Security Hardening
 
-- [ ] Add structured logging with correlation IDs to all NestJS Lambda handlers
-- [ ] Add CloudWatch Logs Insights queries for common debugging patterns
-- [ ] Verify TLS enforced on Aurora connections and CloudFront→S3 origin
-- [ ] Confirm encryption-at-rest enabled for Aurora, S3 buckets, and Secrets Manager
-- [ ] Review IAM policies — no wildcards on resource or action
-- [ ] Validate Lambda authorizer rejects expired/invalid JWTs with correct 401/403 responses
+- [x] Add structured logging with correlation IDs to all NestJS Lambda handlers
+- [x] Add CloudWatch Logs Insights queries for common debugging patterns
+- [x] Verify TLS enforced on Aurora connections and CloudFront→S3 origin
+- [x] Confirm encryption-at-rest enabled for Aurora, S3 buckets, and Secrets Manager
+- [x] Review IAM policies — no wildcards on resource or action
+- [x] Validate Lambda authorizer rejects expired/invalid JWTs with correct 401/403 responses
 
 ---
 
