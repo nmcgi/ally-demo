@@ -282,35 +282,39 @@ While this is a reference/educational project, it's structured so you can speak 
 
 ## Getting Started
 
+This is a pnpm + Turborepo monorepo. Requires **Node ≥ 22.13** and **pnpm ≥ 9** (the repo pins `pnpm@11.18.0` via `packageManager`).
+
 ```bash
 # Clone the repo
 git clone https://github.com/your-username/ally-demo.git
 cd ally-demo
 
-# Install dependencies
-cd apps/api && npm install
-cd ../web-host && npm install
-cd ../web-accounts && npm install
-cd ../web-loans && npm install
-cd ../web-admin && npm install
+# Install all workspace dependencies from the root (one command)
+pnpm install
 
-# Local Postgres via Docker Compose
-docker-compose up -d db
+# Start local Postgres (Docker)
+pnpm db:up
 
-# Run backend locally (Lambda-emulated)
-cd apps/api
-npm run start:dev
+# Configure the API
+cp apps/api/.env.example apps/api/.env
 
-# Run frontend host + remotes locally
-cd ../web-host
-npm run dev
-# (in separate terminals)
-cd ../web-accounts && npm run dev
-cd ../web-loans && npm run dev
-cd ../web-admin && npm run dev
+# Run every app (API + host shell + all remotes) in parallel via Turborepo
+pnpm dev
 ```
 
-See `docs/deployment.md` for detailed Terraform, Lambda packaging, and Step Functions setup instructions.
+Once running:
+
+| App | URL |
+|-----|-----|
+| Host shell | http://localhost:3000 |
+| API + Swagger docs | http://localhost:3001 · http://localhost:3001/api/docs |
+| Accounts / Loans / Admin remotes | :3001 · :3002 · :3003 |
+
+Other root scripts: `pnpm build`, `pnpm test`, `pnpm lint`, `pnpm type-check`, `pnpm db:down`.
+
+> Module Federation is opt-in (`ENABLE_MODULE_FEDERATION=true`) because `@module-federation/nextjs-mf` targets the Pages Router; by default each app runs standalone with the App Router. See `README.md` for details.
+
+See `docs/deployment.md` for Terraform, Lambda packaging, and CI/CD instructions, and `docs/loan-origination-walkthrough.md` for an end-to-end flow trace.
 
 ---
 

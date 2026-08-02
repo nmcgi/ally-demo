@@ -128,8 +128,8 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 12 — Documentation & Demo Polish
 
-- [ ] Complete `docs/architecture.md` with actual deployed resource names/ARNs
-- [ ] Complete `docs/deployment.md` with step-by-step Terraform and app deployment guide
-- [ ] Complete `docs/security.md` with threat model and compliance notes
-- [ ] Update `PLAN.md` Getting Started commands to match actual monorepo scripts
-- [ ] Record or write a walkthrough of the loan origination flow end-to-end (Step Functions trace → frontend wizard)
+- [x] Complete `docs/architecture.md` with actual deployed resource names/ARNs
+- [x] Complete `docs/deployment.md` with step-by-step Terraform and app deployment guide
+- [x] Complete `docs/security.md` with threat model and compliance notes
+- [x] Update `PLAN.md` Getting Started commands to match actual monorepo scripts
+- [x] Record or write a walkthrough of the loan origination flow end-to-end (Step Functions trace → frontend wizard)
