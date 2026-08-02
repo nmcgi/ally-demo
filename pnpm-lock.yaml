@@ -145,6 +145,110 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.20.1)(typescript@5.9.3)
 
+  apps/web-accounts:
+    dependencies:
+      '@ally/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      '@module-federation/nextjs-mf':
+        specifier: ^8.7.0
+        version: 8.8.72(@rspack/core@2.1.7(@module-federation/runtime-tools@2.8.1))(next@14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-jsx@5.1.1(@babel/core@7.29.7(supports-color@8.1.1))(react@18.3.1))(typescript@5.9.3)(webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3))
+      '@tanstack/react-query':
+        specifier: ^5.62.0
+        version: 5.101.4(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      tailwind-merge:
+        specifier: ^2.5.0
+        version: 2.6.1
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+    devDependencies:
+      '@ally/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.4(postcss@8.5.25)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.25
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+
+  apps/web-admin:
+    dependencies:
+      '@ally/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      '@module-federation/nextjs-mf':
+        specifier: ^8.7.0
+        version: 8.8.72(@rspack/core@2.1.7(@module-federation/runtime-tools@2.8.1))(next@14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-jsx@5.1.1(@babel/core@7.29.7(supports-color@8.1.1))(react@18.3.1))(typescript@5.9.3)(webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3))
+      '@tanstack/react-query':
+        specifier: ^5.62.0
+        version: 5.101.4(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      tailwind-merge:
+        specifier: ^2.5.0
+        version: 2.6.1
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
+    devDependencies:
+      '@ally/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.4(postcss@8.5.25)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.25
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+
   apps/web-host:
     dependencies:
       '@ally/shared-types':
@@ -183,6 +287,58 @@ importers:
       tailwind-merge:
         specifier: ^2.5.0
         version: 2.6.1
+    devDependencies:
+      '@ally/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.4(postcss@8.5.25)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.25
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19
+
+  apps/web-loans:
+    dependencies:
+      '@ally/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      '@module-federation/nextjs-mf':
+        specifier: ^8.7.0
+        version: 8.8.72(@rspack/core@2.1.7(@module-federation/runtime-tools@2.8.1))(next@14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-jsx@5.1.1(@babel/core@7.29.7(supports-color@8.1.1))(react@18.3.1))(typescript@5.9.3)(webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3))
+      '@tanstack/react-query':
+        specifier: ^5.62.0
+        version: 5.101.4(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(@babel/core@7.29.7(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      tailwind-merge:
+        specifier: ^2.5.0
+        version: 2.6.1
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     devDependencies:
       '@ally/tsconfig':
         specifier: workspace:*
@@ -4660,6 +4816,24 @@ packages:
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
+  zustand@5.0.14:
+    resolution: {integrity: sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -9537,3 +9711,10 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.25.76: {}
+
+  zustand@5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1)):
+    optionalDependencies:
+      '@types/react': 18.3.31
+      immer: 11.1.15
+      react: 18.3.1
+      use-sync-external-store: 1.6.0(react@18.3.1)

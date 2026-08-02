@@ -63,30 +63,30 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 6 — Accounts Micro-Frontend (`apps/web-accounts`)
 
-- [ ] Scaffold Next.js/React app with Module Federation remote config
-- [ ] Build account dashboard — balance cards, transaction list (React Query), account switcher
-- [ ] Build transfer wizard (Zustand local form state → API call)
-- [ ] Expose `AccountsDashboard` component via `remoteEntry.js`
+- [x] Scaffold Next.js/React app with Module Federation remote config
+- [x] Build account dashboard — balance cards, transaction list (React Query), account switcher
+- [x] Build transfer wizard (Zustand local form state → API call)
+- [x] Expose `AccountsDashboard` component via `remoteEntry.js`
 
 ---
 
 ## Phase 7 — Loans Micro-Frontend (`apps/web-loans`)
 
-- [ ] Scaffold Next.js/React app with Module Federation remote config
-- [ ] Build loan application wizard (multi-step, Zustand-managed) — personal info, income, loan details, review
-- [ ] Wire submission to backend → Step Functions trigger
-- [ ] Build loan status tracker — poll Step Functions execution status via backend API
-- [ ] Expose `LoanApplication` and `LoanStatus` components via `remoteEntry.js`
+- [x] Scaffold Next.js/React app with Module Federation remote config
+- [x] Build loan application wizard (multi-step, Zustand-managed) — personal info, income, loan details, review
+- [x] Wire submission to backend → Step Functions trigger
+- [x] Build loan status tracker — poll Step Functions execution status via backend API
+- [x] Expose `LoanApplication` and `LoanStatus` components via `remoteEntry.js`
 
 ---
 
 ## Phase 8 — Admin Micro-Frontend (`apps/web-admin`)
 
-- [ ] Scaffold Next.js/React app with Module Federation remote config
-- [ ] Build customer account search + masked detail view
-- [ ] Build loan application review queue (approve/reject actions)
-- [ ] Enforce RBAC — hide/disable based on Redux entitlements from host shell
-- [ ] Expose `AdminPortal` component via `remoteEntry.js`
+- [x] Scaffold Next.js/React app with Module Federation remote config
+- [x] Build customer account search + masked detail view
+- [x] Build loan application review queue (approve/reject actions)
+- [x] Enforce RBAC — hide/disable based on Redux entitlements from host shell
+- [x] Expose `AdminPortal` component via `remoteEntry.js`
 
 ---
 
