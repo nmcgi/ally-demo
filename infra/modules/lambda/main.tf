@@ -32,7 +32,7 @@ resource "aws_lambda_function" "api" {
   function_name = "${local.prefix}-api"
   role          = var.lambda_role_arn
   handler       = "dist/handler.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   memory_size   = var.memory_size
   timeout       = var.timeout
 
@@ -68,7 +68,7 @@ resource "aws_lambda_function" "authorizer" {
   function_name = "${local.prefix}-authorizer"
   role          = var.lambda_role_arn
   handler       = "dist/authorizer.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs22.x"
   memory_size   = 256
   timeout       = 10
 
