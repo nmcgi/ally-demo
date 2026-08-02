@@ -4,6 +4,12 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+  - '@nestjs/core'
+  - bcrypt
+  - aws-sdk
 
 allowBuilds:
   esbuild: true
+  '@nestjs/core': true
+  aws-sdk: true
+  bcrypt: true

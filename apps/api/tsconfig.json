@@ -1,0 +1,10 @@
+{
+  "extends": "@ally/tsconfig/nest.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@ally/shared-types": ["../../packages/shared-types/src/index.ts"]
+    }
+  },
+  "include": ["src", "test"]
+}

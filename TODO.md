@@ -24,19 +24,19 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 3 — NestJS Backend (`apps/api`)
 
-- [ ] Scaffold NestJS app with `@nestjs/cli`
-- [ ] Configure `@vendia/serverless-express` (or `aws-serverless-express`) Lambda adapter + `handler.ts` entry point
-- [ ] Set up TypeORM with Aurora PostgreSQL connection (env-driven, Secrets Manager-ready)
-- [ ] Implement `AuthModule` — JWT strategy (`@nestjs/passport`, `@nestjs/jwt`), login/refresh endpoints, RBAC guards
-- [ ] Implement `UsersModule` — user entity, repository, CRUD endpoints
-- [ ] Implement `AccountsModule` — account/transaction entities, balance queries, transfer logic
-- [ ] Implement `PaymentsModule` — payment initiation, status tracking
-- [ ] Implement `LoansModule` — loan application entity, status transitions, Step Functions trigger
-- [ ] Implement `AdminModule` — masked account views, loan application review, RBAC-gated
-- [ ] Add Swagger/OpenAPI setup (`@nestjs/swagger`) with per-module tags
-- [ ] Add class-validator + class-transformer to all DTOs
-- [ ] Add unit tests for each module (Jest)
-- [ ] Add e2e/integration tests against local Postgres (`test/`)
+- [x] Scaffold NestJS app with `@nestjs/cli`
+- [x] Configure `@vendia/serverless-express` (or `aws-serverless-express`) Lambda adapter + `handler.ts` entry point
+- [x] Set up TypeORM with Aurora PostgreSQL connection (env-driven, Secrets Manager-ready)
+- [x] Implement `AuthModule` — JWT strategy (`@nestjs/passport`, `@nestjs/jwt`), login/refresh endpoints, RBAC guards
+- [x] Implement `UsersModule` — user entity, repository, CRUD endpoints
+- [x] Implement `AccountsModule` — account/transaction entities, balance queries, transfer logic
+- [x] Implement `PaymentsModule` — payment initiation, status tracking
+- [x] Implement `LoansModule` — loan application entity, status transitions, Step Functions trigger
+- [x] Implement `AdminModule` — masked account views, loan application review, RBAC-gated
+- [x] Add Swagger/OpenAPI setup (`@nestjs/swagger`) with per-module tags
+- [x] Add class-validator + class-transformer to all DTOs
+- [x] Add unit tests for each module (Jest)
+- [x] Add e2e/integration tests against local Postgres (`test/`)
 
 ---
 
