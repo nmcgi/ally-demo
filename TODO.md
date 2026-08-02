@@ -92,17 +92,17 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 9 — Terraform Infrastructure (`infra/`)
 
-- [ ] Set up remote state backend (`infra/backend.tf`) — S3 bucket + DynamoDB lock table
-- [ ] Create `infra/modules/networking/` — VPC, public/private subnets, NAT gateway, route tables, VPC endpoints (S3, Secrets Manager, RDS)
-- [ ] Create `infra/modules/iam/` — per-Lambda execution roles with least-privilege policies
-- [ ] Create `infra/modules/database/` — Aurora PostgreSQL cluster, parameter groups, security groups, Secrets Manager secret for credentials
-- [ ] Create `infra/modules/lambda/` — Lambda function resources per domain (accounts, payments, loans, users, admin, authorizer), with VPC config and env var injection
-- [ ] Create `infra/modules/api-gateway/` — HTTP API Gateway, Lambda integrations, Lambda authorizer, CORS, custom domain
-- [ ] Create `infra/modules/step-functions/` — state machine resources, IAM roles for Step Functions → Lambda invocation
-- [ ] Create `infra/modules/cdn/` — S3 bucket for static assets + CloudFront distribution (OAI, cache behaviors, HTTPS)
-- [ ] Create environment configs (`infra/environments/dev/`, `staging/`, `prod/`) composing the modules above
-- [ ] Add CloudWatch log groups, metric filters, and alarms (Lambda errors, throttles, Step Functions failures)
-- [ ] Add Parameter Store entries for non-secret runtime config (feature flags, API URLs)
+- [x] Set up remote state backend (`infra/backend.tf`) — S3 bucket + DynamoDB lock table
+- [x] Create `infra/modules/networking/` — VPC, public/private subnets, NAT gateway, route tables, VPC endpoints (S3, Secrets Manager, RDS)
+- [x] Create `infra/modules/iam/` — per-Lambda execution roles with least-privilege policies
+- [x] Create `infra/modules/database/` — Aurora PostgreSQL cluster, parameter groups, security groups, Secrets Manager secret for credentials
+- [x] Create `infra/modules/lambda/` — Lambda function resources per domain (accounts, payments, loans, users, admin, authorizer), with VPC config and env var injection
+- [x] Create `infra/modules/api-gateway/` — HTTP API Gateway, Lambda integrations, Lambda authorizer, CORS, custom domain
+- [x] Create `infra/modules/step-functions/` — state machine resources, IAM roles for Step Functions → Lambda invocation
+- [x] Create `infra/modules/cdn/` — S3 bucket for static assets + CloudFront distribution (OAI, cache behaviors, HTTPS)
+- [x] Create environment configs (`infra/environments/dev/`, `staging/`, `prod/`) composing the modules above
+- [x] Add CloudWatch log groups, metric filters, and alarms (Lambda errors, throttles, Step Functions failures)
+- [x] Add Parameter Store entries for non-secret runtime config (feature flags, API URLs)
 
 ---
 
