@@ -96,12 +96,15 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@nestjs/cli':
         specifier: ^10.4.0
-        version: 10.4.9(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
+        version: 10.4.9(esbuild@0.27.7)
       '@nestjs/testing':
         specifier: ^10.4.0
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@10.4.22)(@nestjs/platform-express@10.4.22)
@@ -132,6 +135,9 @@ importers:
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.20.1)(supports-color@8.1.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3))
@@ -175,6 +181,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
@@ -190,12 +199,18 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.5.4(postcss@8.5.25)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@1.21.7)(supports-color@8.1.1)
       postcss:
         specifier: ^8.4.47
         version: 8.5.25
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
+      webpack:
+        specifier: ^5.97.0
+        version: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
 
   apps/web-admin:
     dependencies:
@@ -227,6 +242,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
@@ -242,12 +260,18 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.5.4(postcss@8.5.25)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
       postcss:
         specifier: ^8.4.47
         version: 8.5.25
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
+      webpack:
+        specifier: ^5.97.0
+        version: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
 
   apps/web-host:
     dependencies:
@@ -288,6 +312,9 @@ importers:
         specifier: ^2.5.0
         version: 2.6.1
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
@@ -303,12 +330,18 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.5.4(postcss@8.5.25)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
       postcss:
         specifier: ^8.4.47
         version: 8.5.25
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
+      webpack:
+        specifier: ^5.97.0
+        version: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
 
   apps/web-loans:
     dependencies:
@@ -340,6 +373,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.14(@types/react@18.3.31)(immer@11.1.15)(react@18.3.1)(use-sync-external-store@1.6.0(react@18.3.1))
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
@@ -355,12 +391,18 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.5.4(postcss@8.5.25)
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
       postcss:
         specifier: ^8.4.47
         version: 8.5.25
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
+      webpack:
+        specifier: ^5.97.0
+        version: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
 
   packages/eslint-config:
     dependencies:
@@ -380,9 +422,15 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
+      '@ally/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@ally/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
       tsup:
         specifier: ^8.3.0
         version: 8.5.1(jiti@2.4.2)(postcss@8.5.25)(supports-color@8.1.1)(typescript@5.9.3)
@@ -5310,6 +5358,11 @@ snapshots:
   '@esbuild/win32-x64@0.27.7':
     optional: true
 
+  '@eslint-community/eslint-utils@4.10.1(eslint@9.39.5(jiti@1.21.7)(supports-color@8.1.1))':
+    dependencies:
+      eslint: 9.39.5(jiti@1.21.7)(supports-color@8.1.1)
+      eslint-visitor-keys: 3.4.3
+
   '@eslint-community/eslint-utils@4.10.1(eslint@9.39.5(jiti@2.4.2)(supports-color@8.1.1))':
     dependencies:
       eslint: 9.39.5(jiti@2.4.2)(supports-color@8.1.1)
@@ -5771,7 +5824,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@nestjs/cli@10.4.9(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)':
+  '@nestjs/cli@10.4.9(esbuild@0.27.7)':
     dependencies:
       '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
       '@angular-devkit/schematics': 17.3.11(chokidar@3.6.0)
@@ -5781,7 +5834,7 @@ snapshots:
       chokidar: 3.6.0
       cli-table3: 0.6.5
       commander: 4.1.1
-      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.7.2)(webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3))
+      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.7.2)(webpack@5.97.1(esbuild@0.27.7))
       glob: 10.4.5
       inquirer: 8.2.6
       node-emoji: 1.11.0
@@ -5790,7 +5843,7 @@ snapshots:
       tsconfig-paths: 4.2.0
       tsconfig-paths-webpack-plugin: 4.2.0
       typescript: 5.7.2
-      webpack: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
+      webpack: 5.97.1(esbuild@0.27.7)
       webpack-node-externals: 3.0.0
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -7297,6 +7350,47 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
+  eslint@9.39.5(jiti@1.21.7)(supports-color@8.1.1):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.10.1(eslint@9.39.5(jiti@1.21.7)(supports-color@8.1.1))
+      '@eslint-community/regexpp': 4.12.2
+      '@eslint/config-array': 0.21.2(supports-color@8.1.1)
+      '@eslint/config-helpers': 0.4.2
+      '@eslint/core': 0.17.0
+      '@eslint/eslintrc': 3.3.6(supports-color@8.1.1)
+      '@eslint/js': 9.39.5
+      '@eslint/plugin-kit': 0.4.1
+      '@humanfs/node': 0.16.8
+      '@humanwhocodes/module-importer': 1.0.1
+      '@humanwhocodes/retry': 0.4.3
+      '@types/estree': 1.0.9
+      ajv: 6.15.0
+      chalk: 4.1.2
+      cross-spawn: 7.0.6
+      debug: 4.4.3(supports-color@8.1.1)
+      escape-string-regexp: 4.0.0
+      eslint-scope: 8.4.0
+      eslint-visitor-keys: 4.2.1
+      espree: 10.4.0
+      esquery: 1.7.0
+      esutils: 2.0.3
+      fast-deep-equal: 3.1.3
+      file-entry-cache: 8.0.0
+      find-up: 5.0.0
+      glob-parent: 6.0.2
+      ignore: 5.3.2
+      imurmurhash: 0.1.4
+      is-glob: 4.0.3
+      json-stable-stringify-without-jsonify: 1.0.1
+      lodash.merge: 4.6.2
+      minimatch: 3.1.5
+      natural-compare: 1.4.0
+      optionator: 0.9.4
+    optionalDependencies:
+      jiti: 1.21.7
+    transitivePeerDependencies:
+      - supports-color
+
   eslint@9.39.5(jiti@2.4.2)(supports-color@8.1.1):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@9.39.5(jiti@2.4.2)(supports-color@8.1.1))
@@ -7531,7 +7625,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.0.2(typescript@5.7.2)(webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)):
+  fork-ts-checker-webpack-plugin@9.0.2(typescript@5.7.2)(webpack@5.97.1(esbuild@0.27.7)):
     dependencies:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
@@ -7546,7 +7640,7 @@ snapshots:
       semver: 7.8.5
       tapable: 2.3.3
       typescript: 5.7.2
-      webpack: 5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3)
+      webpack: 5.97.1(esbuild@0.27.7)
 
   form-data@4.0.6:
     dependencies:
@@ -9292,6 +9386,16 @@ snapshots:
       postcss: 8.5.25
       uglify-js: 3.19.3
 
+  terser-webpack-plugin@5.6.1(esbuild@0.27.7)(webpack@5.97.1(esbuild@0.27.7)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      jest-worker: 27.5.1
+      schema-utils: 4.3.3
+      terser: 5.49.0
+      webpack: 5.97.1(esbuild@0.27.7)
+    optionalDependencies:
+      esbuild: 0.27.7
+
   terser@5.49.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -9585,6 +9689,45 @@ snapshots:
   webpack-node-externals@3.0.0: {}
 
   webpack-sources@3.5.1: {}
+
+  webpack@5.97.1(esbuild@0.27.7):
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.9
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.18.0
+      browserslist: 4.28.7
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.24.5
+      es-module-lexer: 1.7.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.2
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 3.3.0
+      tapable: 2.3.3
+      terser-webpack-plugin: 5.6.1(esbuild@0.27.7)(webpack@5.97.1(esbuild@0.27.7))
+      watchpack: 2.5.2
+      webpack-sources: 3.5.1
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@swc/core'
+      - '@swc/css'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - lightningcss
+      - postcss
+      - uglify-js
 
   webpack@5.97.1(esbuild@0.27.7)(postcss@8.5.25)(uglify-js@3.19.3):
     dependencies:

@@ -22,7 +22,9 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@ally/eslint-config": "workspace:*",
     "@ally/tsconfig": "workspace:*",
+    "eslint": "^9.0.0",
     "tsup": "^8.3.0"
   }
 }

@@ -2,10 +2,10 @@
 
 ## Workflows
 
-| File | Trigger | Purpose |
-|------|---------|---------|
-| `ci.yml` | PR to `main`, push to `main` | Lint, type-check, unit tests, E2E tests, Terraform validate |
-| `deploy.yml` | Push to `main` | Build artifacts, deploy dev → staging → prod |
+| File | Name | Trigger | Purpose |
+|------|------|---------|---------|
+| `test.yml` | `Test` | PR to `main`, push to `main` | Lint, type-check, unit tests, E2E tests, Terraform validate |
+| `deploy.yml` | `Deploy` | After `Test` succeeds on `main` | Build artifacts, deploy dev → staging → prod |
 
 ## Environment protection rules
 

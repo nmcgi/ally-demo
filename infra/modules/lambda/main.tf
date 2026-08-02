@@ -9,13 +9,13 @@ locals {
   }
 
   common_env = {
-    NODE_ENV              = var.env == "prod" ? "production" : "development"
-    DB_SECRET_ARN         = var.db_secret_arn
-    JWT_SECRET_SSM        = var.jwt_secret_ssm_arn
-    JWT_REFRESH_SECRET_SSM = var.jwt_refresh_secret_ssm_arn
+    NODE_ENV                = var.env == "prod" ? "production" : "development"
+    DB_SECRET_ARN           = var.db_secret_arn
+    JWT_SECRET_SSM          = var.jwt_secret_ssm_arn
+    JWT_REFRESH_SECRET_SSM  = var.jwt_refresh_secret_ssm_arn
     STEP_FUNCTIONS_LOAN_ARN = var.loan_sfn_arn
     STEP_FUNCTIONS_KYC_ARN  = var.kyc_sfn_arn
-    LOG_LEVEL             = var.env == "prod" ? "warn" : "debug"
+    LOG_LEVEL               = var.env == "prod" ? "warn" : "debug"
   }
 }
 

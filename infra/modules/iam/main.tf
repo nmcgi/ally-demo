@@ -32,27 +32,27 @@ resource "aws_iam_role_policy" "lambda_inline" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "SecretsManager"
-        Effect = "Allow"
-        Action = ["secretsmanager:GetSecretValue"]
+        Sid      = "SecretsManager"
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
         Resource = [var.db_secret_arn]
       },
       {
-        Sid    = "SSMParameters"
-        Effect = "Allow"
-        Action = ["ssm:GetParameter", "ssm:GetParametersByPath"]
+        Sid      = "SSMParameters"
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter", "ssm:GetParametersByPath"]
         Resource = ["arn:aws:ssm:*:*:parameter${var.ssm_parameter_prefix}/*"]
       },
       {
-        Sid    = "StepFunctions"
-        Effect = "Allow"
-        Action = ["states:StartExecution", "states:SendTaskSuccess", "states:SendTaskFailure"]
+        Sid      = "StepFunctions"
+        Effect   = "Allow"
+        Action   = ["states:StartExecution", "states:SendTaskSuccess", "states:SendTaskFailure"]
         Resource = var.step_functions_arns
       },
       {
-        Sid    = "CloudWatchLogs"
-        Effect = "Allow"
-        Action = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Sid      = "CloudWatchLogs"
+        Effect   = "Allow"
+        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
         Resource = ["arn:aws:logs:*:*:*"]
       }
     ]
@@ -84,9 +84,9 @@ resource "aws_iam_role_policy" "sfn_inline" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "InvokeLambda"
-        Effect = "Allow"
-        Action = ["lambda:InvokeFunction"]
+        Sid      = "InvokeLambda"
+        Effect   = "Allow"
+        Action   = ["lambda:InvokeFunction"]
         Resource = ["arn:aws:lambda:*:*:function:${local.prefix}-*"]
       },
       {
@@ -103,7 +103,7 @@ resource "aws_iam_role_policy" "sfn_inline" {
         Sid    = "XRay"
         Effect = "Allow"
         Action = ["xray:PutTraceSegments", "xray:PutTelemetryRecords", "xray:GetSamplingRules",
-                  "xray:GetSamplingTargets"]
+        "xray:GetSamplingTargets"]
         Resource = ["*"]
       }
     ]

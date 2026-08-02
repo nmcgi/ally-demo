@@ -76,11 +76,11 @@ resource "aws_s3_bucket_policy" "mfe" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid    = "AllowCloudFront"
-      Effect = "Allow"
+      Sid       = "AllowCloudFront"
+      Effect    = "Allow"
       Principal = { Service = "cloudfront.amazonaws.com" }
-      Action   = "s3:GetObject"
-      Resource = "${each.value.arn}/*"
+      Action    = "s3:GetObject"
+      Resource  = "${each.value.arn}/*"
       Condition = {
         StringEquals = {
           "AWS:SourceArn" = aws_cloudfront_distribution.main.arn
@@ -96,10 +96,10 @@ locals {
   mfe_keys = ["host", "accounts", "loans", "admin"]
 
   s3_origins = {
-    host     = { bucket = aws_s3_bucket.mfe["host"],     path = "" }
+    host     = { bucket = aws_s3_bucket.mfe["host"], path = "" }
     accounts = { bucket = aws_s3_bucket.mfe["accounts"], path = "/accounts" }
-    loans    = { bucket = aws_s3_bucket.mfe["loans"],    path = "/loans" }
-    admin    = { bucket = aws_s3_bucket.mfe["admin"],    path = "/admin" }
+    loans    = { bucket = aws_s3_bucket.mfe["loans"], path = "/loans" }
+    admin    = { bucket = aws_s3_bucket.mfe["admin"], path = "/admin" }
   }
 }
 

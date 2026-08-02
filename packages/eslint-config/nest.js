@@ -5,8 +5,11 @@ const base = require('./index');
 module.exports = [
   ...base,
   {
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
-      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
+      // NestJS controllers/services idiomatically omit return types on
+      // decorated handler methods — keep this off to match that convention.
+      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },

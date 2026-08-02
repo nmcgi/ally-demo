@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: test-${{ github.ref }}
   cancel-in-progress: true
 
 env:

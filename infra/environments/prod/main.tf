@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.7"
   required_providers {
-    aws    = { source = "hashicorp/aws",    version = "~> 5.0" }
+    aws    = { source = "hashicorp/aws", version = "~> 5.0" }
     random = { source = "hashicorp/random", version = "~> 3.6" }
   }
 }
@@ -28,16 +28,16 @@ module "networking" {
   source             = "../../modules/networking"
   project            = local.project
   env                = local.env
-  single_nat_gateway = false  # HA: one NAT GW per AZ
+  single_nat_gateway = false # HA: one NAT GW per AZ
 }
 
 module "cdn" {
-  source               = "../../modules/cdn"
-  project              = local.project
-  env                  = local.env
-  price_class          = "PriceClass_All"
-  custom_domain_name   = var.custom_domain_name
-  acm_certificate_arn  = var.acm_certificate_arn
+  source              = "../../modules/cdn"
+  project             = local.project
+  env                 = local.env
+  price_class         = "PriceClass_All"
+  custom_domain_name  = var.custom_domain_name
+  acm_certificate_arn = var.acm_certificate_arn
 }
 
 module "database" {

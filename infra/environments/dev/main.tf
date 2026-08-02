@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.7"
   required_providers {
-    aws    = { source = "hashicorp/aws",    version = "~> 5.0" }
+    aws    = { source = "hashicorp/aws", version = "~> 5.0" }
     random = { source = "hashicorp/random", version = "~> 3.6" }
   }
 }
@@ -18,9 +18,9 @@ provider "aws" {
 }
 
 locals {
-  project = "ally-demo"
-  env     = "dev"
-  prefix  = "${local.project}-${local.env}"
+  project    = "ally-demo"
+  env        = "dev"
+  prefix     = "${local.project}-${local.env}"
   ssm_prefix = "/${local.project}/${local.env}"
 }
 
@@ -102,11 +102,11 @@ resource "aws_ssm_parameter" "feature_flag_admin" {
 module "iam" {
   source = "../../modules/iam"
 
-  project               = local.project
-  env                   = local.env
-  db_secret_arn         = module.database.db_secret_arn
-  ssm_parameter_prefix  = local.ssm_prefix
-  step_functions_arns   = [
+  project              = local.project
+  env                  = local.env
+  db_secret_arn        = module.database.db_secret_arn
+  ssm_parameter_prefix = local.ssm_prefix
+  step_functions_arns = [
     module.step_functions.loan_sfn_arn,
     module.step_functions.kyc_sfn_arn,
   ]
@@ -119,11 +119,11 @@ module "iam" {
 module "step_functions" {
   source = "../../modules/step-functions"
 
-  project              = local.project
-  env                  = local.env
-  lambda_function_arn  = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.prefix}-api"
-  loan_asl_template    = "${path.root}/../../../workflows/step-functions/loan-origination.asl.json"
-  kyc_asl_template     = "${path.root}/../../../workflows/step-functions/kyc-verification.asl.json"
+  project             = local.project
+  env                 = local.env
+  lambda_function_arn = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.prefix}-api"
+  loan_asl_template   = "${path.root}/../../../workflows/step-functions/loan-origination.asl.json"
+  kyc_asl_template    = "${path.root}/../../../workflows/step-functions/kyc-verification.asl.json"
 }
 
 # ── Lambda ────────────────────────────────────────────────────────────────────

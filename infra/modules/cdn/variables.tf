@@ -1,5 +1,5 @@
 variable "project" { type = string }
-variable "env"     { type = string }
+variable "env" { type = string }
 
 variable "custom_domain_name" {
   type    = string

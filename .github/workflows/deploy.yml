@@ -1,11 +1,15 @@
 name: Deploy
 
+# Deploy runs only after the Test workflow completes — it never triggers
+# directly on push. The root jobs below additionally gate on Test having
+# succeeded on a push to main (see their `if:` conditions).
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: false  # never cancel an in-flight deploy
 
 env:
@@ -13,17 +17,28 @@ env:
   PNPM_VERSION: "9"
   AWS_REGION: us-east-1
   TF_VERSION: "~1.7"
+  # Deploy the exact commit CI validated. For workflow_run events github.sha
+  # points at the default-branch tip, which can differ from the run that
+  # triggered us, so we pin everything to the triggering run's head SHA.
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
 
 jobs:
   # ── Build API Lambda artifact ────────────────────────────────────────────────
   build-api:
     name: Build API
     runs-on: ubuntu-latest
+    # Only proceed when the Test workflow succeeded on a push to main.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
     outputs:
       artifact-key: ${{ steps.artifact.outputs.key }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -53,7 +68,7 @@ jobs:
 
       - name: Set artifact key
         id: artifact
-        run: echo "key=api/${{ github.sha }}.zip" >> "$GITHUB_OUTPUT"
+        run: echo "key=api/${{ env.DEPLOY_SHA }}.zip" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -65,12 +80,19 @@ jobs:
   build-mfes:
     name: Build MFE (${{ matrix.app }})
     runs-on: ubuntu-latest
+    # Only proceed when the Test workflow succeeded on a push to main.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
     strategy:
       matrix:
         app: [web-host, web-accounts, web-loans, web-admin]
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -110,6 +132,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -131,7 +155,7 @@ jobs:
       - name: Upload Lambda artifact to S3
         run: |
           aws s3 cp /tmp/artifacts/api/api.zip \
-            s3://${{ secrets.ARTIFACT_BUCKET_DEV }}/api/${{ github.sha }}.zip
+            s3://${{ secrets.ARTIFACT_BUCKET_DEV }}/api/${{ env.DEPLOY_SHA }}.zip
 
       - name: Sync MFE assets to S3
         run: |
@@ -171,7 +195,7 @@ jobs:
           aws lambda update-function-code \
             --function-name ally-demo-dev-api \
             --s3-bucket ${{ secrets.ARTIFACT_BUCKET_DEV }} \
-            --s3-key api/${{ github.sha }}.zip
+            --s3-key api/${{ env.DEPLOY_SHA }}.zip
           aws lambda wait function-updated \
             --function-name ally-demo-dev-api
 
@@ -193,6 +217,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -214,7 +240,7 @@ jobs:
       - name: Upload Lambda artifact to S3
         run: |
           aws s3 cp /tmp/artifacts/api/api.zip \
-            s3://${{ secrets.ARTIFACT_BUCKET_STAGING }}/api/${{ github.sha }}.zip
+            s3://${{ secrets.ARTIFACT_BUCKET_STAGING }}/api/${{ env.DEPLOY_SHA }}.zip
 
       - name: Sync MFE assets to S3
         run: |
@@ -251,7 +277,7 @@ jobs:
           aws lambda update-function-code \
             --function-name ally-demo-staging-api \
             --s3-bucket ${{ secrets.ARTIFACT_BUCKET_STAGING }} \
-            --s3-key api/${{ github.sha }}.zip
+            --s3-key api/${{ env.DEPLOY_SHA }}.zip
           aws lambda wait function-updated \
             --function-name ally-demo-staging-api
 
@@ -269,10 +295,12 @@ jobs:
     environment: prod             # ← GitHub environment with required reviewers
     permissions:
       id-token: write
-      contents: read
+      contents: write             # needed to push the release tag
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -294,7 +322,7 @@ jobs:
       - name: Upload Lambda artifact to S3
         run: |
           aws s3 cp /tmp/artifacts/api/api.zip \
-            s3://${{ secrets.ARTIFACT_BUCKET_PROD }}/api/${{ github.sha }}.zip
+            s3://${{ secrets.ARTIFACT_BUCKET_PROD }}/api/${{ env.DEPLOY_SHA }}.zip
 
       - name: Sync MFE assets to S3
         run: |
@@ -337,7 +365,7 @@ jobs:
           aws lambda update-function-code \
             --function-name ally-demo-prod-api \
             --s3-bucket ${{ secrets.ARTIFACT_BUCKET_PROD }} \
-            --s3-key api/${{ github.sha }}.zip
+            --s3-key api/${{ env.DEPLOY_SHA }}.zip
           aws lambda wait function-updated \
             --function-name ally-demo-prod-api
 
@@ -349,5 +377,6 @@ jobs:
 
       - name: Tag release
         run: |
-          git tag "deploy-prod-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA::8}"
+          SHA="${{ env.DEPLOY_SHA }}"
+          git tag "deploy-prod-$(date -u +%Y%m%dT%H%M%SZ)-${SHA:0:8}"
           git push --tags

@@ -1,9 +1,9 @@
 variable "project" { type = string }
-variable "env"     { type = string }
+variable "env" { type = string }
 
-variable "lambda_invoke_arn"      { type = string }
-variable "lambda_function_name"   { type = string }
-variable "authorizer_invoke_arn"  { type = string }
+variable "lambda_invoke_arn" { type = string }
+variable "lambda_function_name" { type = string }
+variable "authorizer_invoke_arn" { type = string }
 variable "authorizer_function_name" { type = string }
 
 variable "cors_origins" {

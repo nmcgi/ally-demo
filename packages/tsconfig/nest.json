@@ -8,10 +8,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
-    "exactOptionalPropertyTypes": false,
-    "outDir": "dist",
-    "incremental": true,
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "exactOptionalPropertyTypes": false
   },
   "exclude": ["node_modules", "dist", "test", "coverage"]
 }

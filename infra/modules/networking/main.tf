@@ -1,5 +1,5 @@
 locals {
-  prefix = "${var.project}-${var.env}"
+  prefix        = "${var.project}-${var.env}"
   public_cidrs  = [for i, az in var.azs : cidrsubnet(var.vpc_cidr, 4, i)]
   private_cidrs = [for i, az in var.azs : cidrsubnet(var.vpc_cidr, 4, i + 4)]
 }
@@ -10,7 +10,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = { Name = "${local.prefix}-vpc" }
+  tags                 = { Name = "${local.prefix}-vpc" }
 }
 
 # ── Subnets ───────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ resource "aws_subnet" "public" {
   cidr_block              = local.public_cidrs[count.index]
   availability_zone       = var.azs[count.index]
   map_public_ip_on_launch = true
-  tags = { Name = "${local.prefix}-public-${var.azs[count.index]}" }
+  tags                    = { Name = "${local.prefix}-public-${var.azs[count.index]}" }
 }
 
 resource "aws_subnet" "private" {
@@ -29,7 +29,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = local.private_cidrs[count.index]
   availability_zone = var.azs[count.index]
-  tags = { Name = "${local.prefix}-private-${var.azs[count.index]}" }
+  tags              = { Name = "${local.prefix}-private-${var.azs[count.index]}" }
 }
 
 # ── Internet gateway ──────────────────────────────────────────────────────────

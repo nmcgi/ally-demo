@@ -5,6 +5,7 @@ const base = require('./index');
 module.exports = [
   ...base,
   {
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
     },

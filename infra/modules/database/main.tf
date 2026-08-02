@@ -1,7 +1,7 @@
 locals {
-  prefix   = "${var.project}-${var.env}"
-  db_name  = "ally_db"
-  db_user  = "ally"
+  prefix  = "${var.project}-${var.env}"
+  db_name = "ally_db"
+  db_user = "ally"
 }
 
 resource "random_password" "db" {
@@ -47,20 +47,20 @@ resource "aws_rds_cluster_parameter_group" "main" {
 }
 
 resource "aws_rds_cluster" "main" {
-  cluster_identifier      = "${local.prefix}-cluster"
-  engine                  = "aurora-postgresql"
-  engine_mode             = "provisioned"
-  engine_version          = var.engine_version
-  database_name           = local.db_name
-  master_username         = local.db_user
-  master_password         = random_password.db.result
-  db_subnet_group_name    = var.db_subnet_group_name
-  vpc_security_group_ids  = var.vpc_security_group_ids
+  cluster_identifier              = "${local.prefix}-cluster"
+  engine                          = "aurora-postgresql"
+  engine_mode                     = "provisioned"
+  engine_version                  = var.engine_version
+  database_name                   = local.db_name
+  master_username                 = local.db_user
+  master_password                 = random_password.db.result
+  db_subnet_group_name            = var.db_subnet_group_name
+  vpc_security_group_ids          = var.vpc_security_group_ids
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.main.name
 
-  storage_encrypted       = true
-  deletion_protection     = var.deletion_protection
-  skip_final_snapshot     = var.skip_final_snapshot
+  storage_encrypted         = true
+  deletion_protection       = var.deletion_protection
+  skip_final_snapshot       = var.skip_final_snapshot
   final_snapshot_identifier = var.skip_final_snapshot ? null : "${local.prefix}-final-snapshot"
 
   serverlessv2_scaling_configuration {
