@@ -51,13 +51,13 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 5 — Next.js Host Shell (`apps/web-host`)
 
-- [ ] Scaffold Next.js 14 app (App Router, TypeScript, Tailwind CSS)
-- [ ] Configure Webpack Module Federation host — expose `remoteEntry` contracts for each remote
-- [ ] Set up Redux Toolkit store at host level (session, auth state, entitlements, feature flags)
-- [ ] Implement shell layout — nav, header, auth-aware routing, loading/error boundaries for remote modules
-- [ ] Add React Query `QueryClientProvider` at host level
-- [ ] Implement JWT-aware API client (axios/fetch with refresh interceptor)
-- [ ] Add auth pages (login, logout, token refresh flow)
+- [x] Scaffold Next.js 14 app (App Router, TypeScript, Tailwind CSS)
+- [x] Configure Webpack Module Federation host — expose `remoteEntry` contracts for each remote
+- [x] Set up Redux Toolkit store at host level (session, auth state, entitlements, feature flags)
+- [x] Implement shell layout — nav, header, auth-aware routing, loading/error boundaries for remote modules
+- [x] Add React Query `QueryClientProvider` at host level
+- [x] Implement JWT-aware API client (axios/fetch with refresh interceptor)
+- [x] Add auth pages (login, logout, token refresh flow)
 
 ---
 

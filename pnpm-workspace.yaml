@@ -7,9 +7,11 @@ onlyBuiltDependencies:
   - '@nestjs/core'
   - bcrypt
   - aws-sdk
+  - '@module-federation/nextjs-mf'
 
 allowBuilds:
   esbuild: true
   '@nestjs/core': true
   aws-sdk: true
   bcrypt: true
+  '@module-federation/nextjs-mf': true
