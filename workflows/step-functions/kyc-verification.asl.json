@@ -1,0 +1,485 @@
+{
+  "Comment": "KYC identity verification: document upload → OCR extraction → identity match → sanctions screening → decision",
+  "StartAt": "InitiateKycSession",
+  "States": {
+    "InitiateKycSession": {
+      "Type": "Task",
+      "Resource": "${InitiateKycSessionFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "taskToken.$": "$$.Task.Token"
+      },
+      "ResultPath": "$.session",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "WaitForDocumentUpload"
+    },
+
+    "WaitForDocumentUpload": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${NotifyDocumentUploadRequiredFunctionArn}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "loanApplicationId.$": "$.loanApplicationId",
+          "sessionId.$": "$.session.sessionId",
+          "uploadUrl.$": "$.session.uploadUrl",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "HeartbeatSeconds": 3600,
+      "TimeoutSeconds": 86400,
+      "ResultPath": "$.documentUpload",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.HeartbeatTimeout", "States.Timeout"],
+          "Next": "KycExpired",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckDocumentUploadResult"
+    },
+
+    "CheckDocumentUploadResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.documentUpload.status",
+          "StringEquals": "uploaded",
+          "Next": "ExtractDocumentData"
+        },
+        {
+          "Variable": "$.documentUpload.status",
+          "StringEquals": "cancelled",
+          "Next": "KycFailed"
+        }
+      ],
+      "Default": "KycFailed"
+    },
+
+    "ExtractDocumentData": {
+      "Type": "Task",
+      "Resource": "${ExtractDocumentDataFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "sessionId.$": "$.session.sessionId",
+        "s3Key.$": "$.documentUpload.s3Key",
+        "documentType.$": "$.documentUpload.documentType"
+      },
+      "ResultPath": "$.extraction",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 3,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["DocumentUnreadable", "UnsupportedDocumentType"],
+          "Next": "RequestDocumentReupload",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckExtractionQuality"
+    },
+
+    "CheckExtractionQuality": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.extraction.confidenceScore",
+          "NumericGreaterThanEquals": 0.85,
+          "Next": "MatchIdentity"
+        },
+        {
+          "Variable": "$.extraction.confidenceScore",
+          "NumericLessThan": 0.85,
+          "Next": "RequestDocumentReupload"
+        }
+      ],
+      "Default": "RequestDocumentReupload"
+    },
+
+    "RequestDocumentReupload": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${NotifyDocumentReuploadRequiredFunctionArn}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "loanApplicationId.$": "$.loanApplicationId",
+          "sessionId.$": "$.session.sessionId",
+          "uploadUrl.$": "$.session.uploadUrl",
+          "reason.$": "$.error",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "HeartbeatSeconds": 3600,
+      "TimeoutSeconds": 86400,
+      "ResultPath": "$.documentReupload",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.HeartbeatTimeout", "States.Timeout"],
+          "Next": "KycExpired",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "ExtractDocumentData"
+    },
+
+    "MatchIdentity": {
+      "Type": "Task",
+      "Resource": "${MatchIdentityFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "extractedData.$": "$.extraction.data",
+        "documentType.$": "$.documentUpload.documentType"
+      },
+      "ResultPath": "$.identityMatch",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckIdentityMatch"
+    },
+
+    "CheckIdentityMatch": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.identityMatch.matched",
+              "BooleanEquals": true
+            },
+            {
+              "Variable": "$.identityMatch.matchScore",
+              "NumericGreaterThanEquals": 0.9
+            }
+          ],
+          "Next": "RunSanctionsScreening"
+        }
+      ],
+      "Default": "RequireManualIdentityReview"
+    },
+
+    "RequireManualIdentityReview": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${NotifyComplianceTeamFunctionArn}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "loanApplicationId.$": "$.loanApplicationId",
+          "identityMatchResult.$": "$.identityMatch",
+          "extractedData.$": "$.extraction.data",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "HeartbeatSeconds": 86400,
+      "TimeoutSeconds": 259200,
+      "ResultPath": "$.manualIdentityReview",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.HeartbeatTimeout", "States.Timeout"],
+          "Next": "KycExpired",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckManualIdentityReviewResult"
+    },
+
+    "CheckManualIdentityReviewResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.manualIdentityReview.decision",
+          "StringEquals": "approved",
+          "Next": "RunSanctionsScreening"
+        }
+      ],
+      "Default": "KycFailed"
+    },
+
+    "RunSanctionsScreening": {
+      "Type": "Task",
+      "Resource": "${RunSanctionsScreeningFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "extractedData.$": "$.extraction.data"
+      },
+      "ResultPath": "$.sanctionsScreening",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["SanctionsServiceUnavailable"],
+          "Next": "WaitAndRetrySanctionsScreening",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckSanctionsResult"
+    },
+
+    "WaitAndRetrySanctionsScreening": {
+      "Type": "Wait",
+      "Seconds": 60,
+      "Next": "RunSanctionsScreening"
+    },
+
+    "CheckSanctionsResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.sanctionsScreening.clear",
+          "BooleanEquals": true,
+          "Next": "FinalizeKycApproval"
+        },
+        {
+          "Variable": "$.sanctionsScreening.requiresReview",
+          "BooleanEquals": true,
+          "Next": "RequireManualSanctionsReview"
+        }
+      ],
+      "Default": "KycFailed"
+    },
+
+    "RequireManualSanctionsReview": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${NotifyComplianceTeamFunctionArn}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "loanApplicationId.$": "$.loanApplicationId",
+          "sanctionsHits.$": "$.sanctionsScreening.hits",
+          "reviewType": "sanctions",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "HeartbeatSeconds": 86400,
+      "TimeoutSeconds": 259200,
+      "ResultPath": "$.manualSanctionsReview",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.HeartbeatTimeout", "States.Timeout"],
+          "Next": "KycExpired",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckSanctionsManualReviewResult"
+    },
+
+    "CheckSanctionsManualReviewResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.manualSanctionsReview.decision",
+          "StringEquals": "cleared",
+          "Next": "FinalizeKycApproval"
+        }
+      ],
+      "Default": "KycFailed"
+    },
+
+    "FinalizeKycApproval": {
+      "Type": "Task",
+      "Resource": "${FinalizeKycFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "status": "approved",
+        "identityMatchScore.$": "$.identityMatch.matchScore",
+        "documentType.$": "$.documentUpload.documentType"
+      },
+      "ResultPath": "$.kycResult",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 5,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleKycSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "End": true
+    },
+
+    "KycExpired": {
+      "Type": "Task",
+      "Resource": "${FinalizeKycFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "status": "failed",
+        "reason": "KYC session expired — customer did not complete verification in time"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "KycVerificationFailed"
+    },
+
+    "KycFailed": {
+      "Type": "Task",
+      "Resource": "${FinalizeKycFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "status": "failed",
+        "reason": "Identity or sanctions check did not pass"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "KycVerificationFailed"
+    },
+
+    "KycVerificationFailed": {
+      "Type": "Fail",
+      "Error": "KycFailed",
+      "Cause": "KYC identity verification did not pass"
+    },
+
+    "HandleKycSystemError": {
+      "Type": "Task",
+      "Resource": "${HandleSystemErrorFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "workflow": "kyc-verification",
+        "error.$": "$.error"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "KycSystemError"
+    },
+
+    "KycSystemError": {
+      "Type": "Fail",
+      "Error": "SystemError",
+      "Cause": "An unexpected system error occurred during KYC verification"
+    }
+  }
+}

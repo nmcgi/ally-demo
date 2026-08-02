@@ -1,0 +1,433 @@
+{
+  "Comment": "Loan origination workflow: validate → KYC → credit check → underwrite → decision",
+  "StartAt": "ValidateApplication",
+  "States": {
+    "ValidateApplication": {
+      "Type": "Task",
+      "Resource": "${ValidateLoanApplicationFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId"
+      },
+      "ResultPath": "$.validation",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["ValidationError"],
+          "Next": "RejectApplication",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckValidationResult"
+    },
+
+    "CheckValidationResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validation.valid",
+          "BooleanEquals": false,
+          "Next": "RejectApplication"
+        }
+      ],
+      "Default": "StartKycVerification"
+    },
+
+    "StartKycVerification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${StartKycVerificationFunctionArn}",
+        "Payload": {
+          "loanApplicationId.$": "$.loanApplicationId",
+          "userId.$": "$.userId",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "HeartbeatSeconds": 86400,
+      "ResultPath": "$.kyc",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["KycFailed", "States.HeartbeatTimeout"],
+          "Next": "RejectApplicationKycFailed",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckKycResult"
+    },
+
+    "CheckKycResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.kyc.status",
+          "StringEquals": "approved",
+          "Next": "RunCreditCheck"
+        },
+        {
+          "Variable": "$.kyc.status",
+          "StringEquals": "failed",
+          "Next": "RejectApplicationKycFailed"
+        }
+      ],
+      "Default": "RejectApplicationKycFailed"
+    },
+
+    "RunCreditCheck": {
+      "Type": "Task",
+      "Resource": "${RunCreditCheckFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId"
+      },
+      "ResultPath": "$.creditCheck",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 4,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["CreditBureauUnavailable"],
+          "Next": "WaitAndRetryCreditCheck",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckCreditResult"
+    },
+
+    "WaitAndRetryCreditCheck": {
+      "Type": "Wait",
+      "Seconds": 300,
+      "Next": "RunCreditCheck"
+    },
+
+    "CheckCreditResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.creditCheck.score",
+          "NumericGreaterThanEquals": 620,
+          "Next": "Underwrite"
+        }
+      ],
+      "Default": "RejectApplicationCreditFailed"
+    },
+
+    "Underwrite": {
+      "Type": "Task",
+      "Resource": "${UnderwriteFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "creditScore.$": "$.creditCheck.score",
+        "creditReport.$": "$.creditCheck.report"
+      },
+      "ResultPath": "$.underwriting",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckUnderwritingResult"
+    },
+
+    "CheckUnderwritingResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.underwriting.requiresManualReview",
+          "BooleanEquals": true,
+          "Next": "ManualUnderwritingReview"
+        },
+        {
+          "Variable": "$.underwriting.decision",
+          "StringEquals": "approved",
+          "Next": "ApproveApplication"
+        }
+      ],
+      "Default": "RejectApplication"
+    },
+
+    "ManualUnderwritingReview": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${NotifyUnderwriterFunctionArn}",
+        "Payload": {
+          "loanApplicationId.$": "$.loanApplicationId",
+          "userId.$": "$.userId",
+          "underwritingResult.$": "$.underwriting",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "HeartbeatSeconds": 259200,
+      "TimeoutSeconds": 604800,
+      "ResultPath": "$.manualReview",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.HeartbeatTimeout", "States.Timeout"],
+          "Next": "RejectApplicationTimeout",
+          "ResultPath": "$.error"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckManualReviewResult"
+    },
+
+    "CheckManualReviewResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.manualReview.decision",
+          "StringEquals": "approved",
+          "Next": "ApproveApplication"
+        }
+      ],
+      "Default": "RejectApplication"
+    },
+
+    "ApproveApplication": {
+      "Type": "Task",
+      "Resource": "${FinalizeApprovalFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "approvedAmount.$": "$.underwriting.approvedAmount",
+        "approvedRate.$": "$.underwriting.approvedRate",
+        "termMonths.$": "$.underwriting.termMonths"
+      },
+      "ResultPath": "$.approval",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 5,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleSystemError",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "NotifyApproval"
+    },
+
+    "NotifyApproval": {
+      "Type": "Task",
+      "Resource": "${SendNotificationFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "event": "loan_approved",
+        "approvedAmount.$": "$.underwriting.approvedAmount",
+        "approvedRate.$": "$.underwriting.approvedRate"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "ApplicationApproved"
+    },
+
+    "ApplicationApproved": {
+      "Type": "Succeed"
+    },
+
+    "RejectApplication": {
+      "Type": "Task",
+      "Resource": "${FinalizeRejectionFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "reason": "Application did not meet underwriting criteria"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "NotifyRejection"
+    },
+
+    "RejectApplicationKycFailed": {
+      "Type": "Task",
+      "Resource": "${FinalizeRejectionFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "reason": "Identity verification failed"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "NotifyRejection"
+    },
+
+    "RejectApplicationCreditFailed": {
+      "Type": "Task",
+      "Resource": "${FinalizeRejectionFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "reason": "Credit score does not meet minimum requirements"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "NotifyRejection"
+    },
+
+    "RejectApplicationTimeout": {
+      "Type": "Task",
+      "Resource": "${FinalizeRejectionFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "reason": "Application expired — manual review not completed within the required timeframe"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "NotifyRejection"
+    },
+
+    "NotifyRejection": {
+      "Type": "Task",
+      "Resource": "${SendNotificationFunctionArn}",
+      "Parameters": {
+        "userId.$": "$.userId",
+        "loanApplicationId.$": "$.loanApplicationId",
+        "event": "loan_rejected"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "ApplicationRejected"
+    },
+
+    "ApplicationRejected": {
+      "Type": "Fail",
+      "Error": "ApplicationRejected",
+      "Cause": "Loan application did not meet approval criteria"
+    },
+
+    "HandleSystemError": {
+      "Type": "Task",
+      "Resource": "${HandleSystemErrorFunctionArn}",
+      "Parameters": {
+        "loanApplicationId.$": "$.loanApplicationId",
+        "userId.$": "$.userId",
+        "error.$": "$.error"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "SystemError"
+    },
+
+    "SystemError": {
+      "Type": "Fail",
+      "Error": "SystemError",
+      "Cause": "An unexpected system error occurred during loan origination"
+    }
+  }
+}

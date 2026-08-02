@@ -42,10 +42,10 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 4 — Step Functions Workflows (`workflows/step-functions`)
 
-- [ ] Author `loan-origination.asl.json` state machine (validate → credit-check → KYC → underwrite → decision)
-- [ ] Author `kyc-verification.asl.json` state machine (ID upload → verify → match → approve/reject)
-- [ ] Wire Step Functions task states to NestJS Lambda ARNs (parameterized for env)
-- [ ] Add error/retry/catch configs and wait-for-callback tokens for human-approval steps
+- [x] Author `loan-origination.asl.json` state machine (validate → credit-check → KYC → underwrite → decision)
+- [x] Author `kyc-verification.asl.json` state machine (ID upload → verify → match → approve/reject)
+- [x] Wire Step Functions task states to NestJS Lambda ARNs (parameterized for env)
+- [x] Add error/retry/catch configs and wait-for-callback tokens for human-approval steps
 
 ---
 
