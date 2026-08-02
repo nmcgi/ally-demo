@@ -1,0 +1,353 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false  # never cancel an in-flight deploy
+
+env:
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+  AWS_REGION: us-east-1
+  TF_VERSION: "~1.7"
+
+jobs:
+  # ── Build API Lambda artifact ────────────────────────────────────────────────
+  build-api:
+    name: Build API
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-key: ${{ steps.artifact.outputs.key }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared-types
+        run: pnpm --filter @ally/shared-types build
+
+      - name: Build API
+        run: pnpm --filter @ally/api build
+
+      - name: Package Lambda ZIP
+        working-directory: apps/api
+        run: |
+          zip -r api.zip dist/ node_modules/ package.json \
+            --exclude "node_modules/.cache/*" \
+            --exclude "node_modules/@types/*" \
+            --exclude "node_modules/typescript/*"
+
+      - name: Set artifact key
+        id: artifact
+        run: echo "key=api/${{ github.sha }}.zip" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-lambda
+          path: apps/api/api.zip
+          retention-days: 7
+
+  # ── Build MFE static assets ──────────────────────────────────────────────────
+  build-mfes:
+    name: Build MFE (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [web-host, web-accounts, web-loans, web-admin]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared-types
+        run: pnpm --filter @ally/shared-types build
+
+      - name: Build ${{ matrix.app }}
+        run: pnpm --filter @ally/${{ matrix.app }} build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mfe-${{ matrix.app }}
+          path: apps/${{ matrix.app }}/.next/
+          retention-days: 7
+
+  # ── Deploy to dev (automatic) ────────────────────────────────────────────────
+  deploy-dev:
+    name: Deploy → dev
+    needs: [build-api, build-mfes]
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-lambda
+          path: /tmp/artifacts/api
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mfe-*
+          path: /tmp/artifacts/mfe
+          merge-multiple: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload Lambda artifact to S3
+        run: |
+          aws s3 cp /tmp/artifacts/api/api.zip \
+            s3://${{ secrets.ARTIFACT_BUCKET_DEV }}/api/${{ github.sha }}.zip
+
+      - name: Sync MFE assets to S3
+        run: |
+          for app in web-host web-accounts web-loans web-admin; do
+            bucket_key=$(echo "$app" | sed 's/web-//')
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_DEV_PREFIX }}-${bucket_key}/ \
+              --cache-control "public,max-age=31536000,immutable" \
+              --exclude "*.html"
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_DEV_PREFIX }}-${bucket_key}/ \
+              --cache-control "no-cache,no-store,must-revalidate" \
+              --include "*.html" \
+              --exclude "*"
+          done
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init
+        working-directory: infra/environments/dev
+        run: terraform init
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+          TF_VAR_jwt_refresh_secret: ${{ secrets.JWT_REFRESH_SECRET }}
+
+      - name: Terraform apply
+        working-directory: infra/environments/dev
+        run: |
+          terraform apply -auto-approve \
+            -var "jwt_secret=${{ secrets.JWT_SECRET }}" \
+            -var "jwt_refresh_secret=${{ secrets.JWT_REFRESH_SECRET }}"
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ally-demo-dev-api \
+            --s3-bucket ${{ secrets.ARTIFACT_BUCKET_DEV }} \
+            --s3-key api/${{ github.sha }}.zip
+          aws lambda wait function-updated \
+            --function-name ally-demo-dev-api
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID_DEV }} \
+            --paths "/*"
+
+  # ── Deploy to staging (requires approval) ────────────────────────────────────
+  deploy-staging:
+    name: Deploy → staging
+    needs: [deploy-dev]
+    runs-on: ubuntu-latest
+    environment: staging          # ← GitHub environment with required reviewers
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-lambda
+          path: /tmp/artifacts/api
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mfe-*
+          path: /tmp/artifacts/mfe
+          merge-multiple: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload Lambda artifact to S3
+        run: |
+          aws s3 cp /tmp/artifacts/api/api.zip \
+            s3://${{ secrets.ARTIFACT_BUCKET_STAGING }}/api/${{ github.sha }}.zip
+
+      - name: Sync MFE assets to S3
+        run: |
+          for app in web-host web-accounts web-loans web-admin; do
+            bucket_key=$(echo "$app" | sed 's/web-//')
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_STAGING_PREFIX }}-${bucket_key}/ \
+              --cache-control "public,max-age=31536000,immutable" \
+              --exclude "*.html"
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_STAGING_PREFIX }}-${bucket_key}/ \
+              --cache-control "no-cache,no-store,must-revalidate" \
+              --include "*.html" \
+              --exclude "*"
+          done
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init
+        working-directory: infra/environments/staging
+        run: terraform init
+
+      - name: Terraform apply
+        working-directory: infra/environments/staging
+        run: |
+          terraform apply -auto-approve \
+            -var "jwt_secret=${{ secrets.JWT_SECRET }}" \
+            -var "jwt_refresh_secret=${{ secrets.JWT_REFRESH_SECRET }}"
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ally-demo-staging-api \
+            --s3-bucket ${{ secrets.ARTIFACT_BUCKET_STAGING }} \
+            --s3-key api/${{ github.sha }}.zip
+          aws lambda wait function-updated \
+            --function-name ally-demo-staging-api
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID_STAGING }} \
+            --paths "/*"
+
+  # ── Deploy to prod (requires approval) ───────────────────────────────────────
+  deploy-prod:
+    name: Deploy → prod
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment: prod             # ← GitHub environment with required reviewers
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-lambda
+          path: /tmp/artifacts/api
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mfe-*
+          path: /tmp/artifacts/mfe
+          merge-multiple: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload Lambda artifact to S3
+        run: |
+          aws s3 cp /tmp/artifacts/api/api.zip \
+            s3://${{ secrets.ARTIFACT_BUCKET_PROD }}/api/${{ github.sha }}.zip
+
+      - name: Sync MFE assets to S3
+        run: |
+          for app in web-host web-accounts web-loans web-admin; do
+            bucket_key=$(echo "$app" | sed 's/web-//')
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_PROD_PREFIX }}-${bucket_key}/ \
+              --cache-control "public,max-age=31536000,immutable" \
+              --exclude "*.html"
+            aws s3 sync /tmp/artifacts/mfe/mfe-${app}/ \
+              s3://${{ secrets.MFE_BUCKET_PROD_PREFIX }}-${bucket_key}/ \
+              --cache-control "no-cache,no-store,must-revalidate" \
+              --include "*.html" \
+              --exclude "*"
+          done
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init
+        working-directory: infra/environments/prod
+        run: terraform init
+
+      - name: Terraform plan
+        working-directory: infra/environments/prod
+        run: |
+          terraform plan -out=tfplan \
+            -var "jwt_secret=${{ secrets.JWT_SECRET }}" \
+            -var "jwt_refresh_secret=${{ secrets.JWT_REFRESH_SECRET }}" \
+            -var "custom_domain_name=${{ secrets.PROD_DOMAIN }}" \
+            -var "acm_certificate_arn=${{ secrets.PROD_ACM_CERT_ARN }}"
+
+      - name: Terraform apply
+        working-directory: infra/environments/prod
+        run: terraform apply -auto-approve tfplan
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name ally-demo-prod-api \
+            --s3-bucket ${{ secrets.ARTIFACT_BUCKET_PROD }} \
+            --s3-key api/${{ github.sha }}.zip
+          aws lambda wait function-updated \
+            --function-name ally-demo-prod-api
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID_PROD }} \
+            --paths "/*"
+
+      - name: Tag release
+        run: |
+          git tag "deploy-prod-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA::8}"
+          git push --tags

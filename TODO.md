@@ -108,10 +108,10 @@ Tasks are ordered roughly by dependency. Complete infrastructure scaffolding bef
 
 ## Phase 10 — CI/CD (`/.github/workflows`)
 
-- [ ] Create `ci.yml` — lint, type-check, unit/integration tests on every PR (all apps + infra validate)
-- [ ] Create `deploy.yml` — on merge to `main`: build Lambda zips, publish MFE remotes to S3, invalidate CloudFront, `terraform apply` per environment
-- [ ] Add GitHub secrets for AWS credentials, Terraform backend config
-- [ ] Gate `terraform apply` on manual approval for staging/prod environments
+- [x] Create `ci.yml` — lint, type-check, unit/integration tests on every PR (all apps + infra validate)
+- [x] Create `deploy.yml` — on merge to `main`: build Lambda zips, publish MFE remotes to S3, invalidate CloudFront, `terraform apply` per environment
+- [x] Add GitHub secrets for AWS credentials, Terraform backend config
+- [x] Gate `terraform apply` on manual approval for staging/prod environments
 
 ---
 
