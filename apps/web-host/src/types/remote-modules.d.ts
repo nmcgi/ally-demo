@@ -20,6 +20,10 @@ declare module 'loans/LoanStatus' {
 }
 
 declare module 'admin/AdminPortal' {
-  const AdminPortal: React.ComponentType;
+  interface AdminPortalProps {
+    /** Role from the host Redux shell — only 'admin' may take review actions */
+    role?: string | undefined;
+  }
+  const AdminPortal: React.ComponentType<AdminPortalProps>;
   export default AdminPortal;
 }

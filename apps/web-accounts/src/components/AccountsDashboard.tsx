@@ -17,7 +17,7 @@ export default function AccountsDashboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 2 }).map((_, i) => (
             <div key={i} className="h-44 rounded-2xl bg-gray-200 animate-pulse" />
@@ -29,7 +29,7 @@ export default function AccountsDashboard() {
 
   if (isError || !accounts) {
     return (
-      <div className="rounded-xl bg-red-50 border border-red-200 p-8 text-center text-red-700">
+      <div className="max-w-5xl mx-auto rounded-xl bg-red-50 border border-red-200 p-8 text-center text-red-700">
         <p className="font-medium">Could not load accounts.</p>
         <p className="text-sm mt-1 text-red-500">Check your connection or sign in again.</p>
       </div>
@@ -37,7 +37,7 @@ export default function AccountsDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
       {/* Account cards */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -82,7 +82,7 @@ export default function AccountsDashboard() {
               ••••{selectedAccount.accountNumber.slice(-4)}
             </span>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-2">
             <TransactionList accountId={activeAccountId!} />
           </div>
         </section>

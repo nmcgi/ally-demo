@@ -6,6 +6,7 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "start": "node dist/main",
+    "db:seed": "ts-node --transpile-only src/database/seed.ts",
     "lint": "eslint src",
     "type-check": "tsc --noEmit",
     "test": "jest",

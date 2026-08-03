@@ -23,7 +23,7 @@ export function AccountCard({ account, selected, onClick }: AccountCardProps) {
       className={clsx(
         'relative w-full text-left rounded-2xl p-6 bg-gradient-to-br text-white transition-all duration-150',
         gradient,
-        selected ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-100 shadow-lg scale-[1.02]' : 'shadow hover:shadow-md hover:scale-[1.01]',
+        selected ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-50 shadow-lg scale-[1.02]' : 'shadow hover:shadow-md hover:scale-[1.01]',
       )}
     >
       <div className="flex justify-between items-start mb-8">

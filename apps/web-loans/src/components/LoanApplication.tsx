@@ -31,10 +31,10 @@ export default function LoanApplication() {
 
   if (submittedId && view === 'apply') {
     return (
-      <div className="max-w-xl mx-auto p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center space-y-4">
-          <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-            <svg className="h-7 w-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 bg-emerald-100 ring-8 ring-emerald-50 rounded-full flex items-center justify-center mx-auto">
+            <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -64,10 +64,10 @@ export default function LoanApplication() {
 
   if (wizardError && view === 'apply') {
     return (
-      <div className="max-w-xl mx-auto p-4 sm:p-6">
+      <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center space-y-4">
-          <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-            <svg className="h-7 w-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 bg-red-100 ring-8 ring-red-50 rounded-full flex items-center justify-center mx-auto">
+            <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
@@ -93,7 +93,7 @@ export default function LoanApplication() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-4 sm:p-6 space-y-4">
+    <div className="max-w-2xl mx-auto space-y-5">
       {view === 'list' && (
         <>
           <div className="flex items-center justify-between">

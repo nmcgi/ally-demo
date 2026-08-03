@@ -38,7 +38,7 @@ export function LoanReviewQueue() {
     <div className="space-y-3">
       {loans.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 bg-emerald-100 ring-8 ring-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>

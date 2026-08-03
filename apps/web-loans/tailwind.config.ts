@@ -4,7 +4,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a5f' },
+        // Ramp derived from the brand primary #50104A (brand-600), holding
+        // hue ~306° across the scale. Keep in sync with the other apps.
+        brand: {
+          50: '#fbeffa',
+          100: '#f6daf3',
+          200: '#ecb7e6',
+          300: '#da81d0',
+          400: '#ab2b9d',
+          500: '#731769',
+          600: '#50104a',
+          700: '#3f0b39',
+          800: '#30082b',
+          900: '#22071f',
+        },
       },
     },
   },

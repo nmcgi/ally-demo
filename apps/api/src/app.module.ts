@@ -17,14 +17,24 @@ import { CorrelationMiddleware } from './common/logging/correlation.middleware';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        url: config.get<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
-        ssl: config.get<string>('NODE_ENV') === 'production' ? { rejectUnauthorized: true } : false,
-        logging: config.get<string>('NODE_ENV') === 'development',
-      }),
+      useFactory: (config: ConfigService) => {
+        // DB_LOGGING overrides the NODE_ENV default, so scripts (e.g. db:seed)
+        // can silence query logging without pretending to be another env.
+        const loggingOverride = config.get<string>('DB_LOGGING');
+
+        return {
+          type: 'postgres',
+          url: config.get<string>('DATABASE_URL'),
+          autoLoadEntities: true,
+          synchronize: config.get<string>('NODE_ENV') !== 'production',
+          ssl:
+            config.get<string>('NODE_ENV') === 'production' ? { rejectUnauthorized: true } : false,
+          logging:
+            loggingOverride !== undefined
+              ? loggingOverride === 'true'
+              : config.get<string>('NODE_ENV') === 'development',
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,

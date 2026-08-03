@@ -10,7 +10,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
     <svg
       className={clsx(
         'animate-spin text-brand-600',
-        { 'h-4 w-4': size === 'sm', 'h-8 w-8': size === 'md', 'h-12 w-12': size === 'lg' },
+        { 'h-4 w-4': size === 'sm', 'h-6 w-6': size === 'md', 'h-8 w-8': size === 'lg' },
         className,
       )}
       fill="none"

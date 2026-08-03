@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginResponse, JwtPayload } from '@ally/shared-types';
 
 export type User = Pick<UserEntity, 'id' | 'email' | 'role'>;
@@ -14,9 +16,15 @@ export class AuthService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly usersRepo: Repository<UserEntity>,
+    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
+
+  async register(dto: CreateUserDto): Promise<LoginResponse> {
+    const user = await this.usersService.create(dto);
+    return this.login({ id: user.id, email: user.email, role: user.role });
+  }
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersRepo.findOne({ where: { email } });

@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
 
 const mockUser: UserEntity = {
@@ -24,12 +25,14 @@ describe('AuthService', () => {
   const mockRepo = { findOne: jest.fn() };
   const mockJwt = { sign: jest.fn().mockReturnValue('token'), verify: jest.fn() };
   const mockConfig = { getOrThrow: jest.fn().mockReturnValue('secret') };
+  const mockUsersService = { create: jest.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: getRepositoryToken(UserEntity), useValue: mockRepo },
+        { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwt },
         { provide: ConfigService, useValue: mockConfig },
       ],
@@ -59,6 +62,25 @@ describe('AuthService', () => {
       const hash = await bcrypt.hash('correct', 1);
       mockRepo.findOne.mockResolvedValue({ ...mockUser, passwordHash: hash });
       expect(await service.validateUser('test@example.com', 'wrong')).toBeNull();
+    });
+  });
+
+  describe('register', () => {
+    it('creates the user and returns tokens', async () => {
+      const { passwordHash: _, ...created } = mockUser;
+      mockUsersService.create.mockResolvedValue(created);
+
+      const result = await service.register({
+        email: mockUser.email,
+        password: 'password123',
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+      });
+
+      expect(mockUsersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: mockUser.email }),
+      );
+      expect(result).toMatchObject({ accessToken: 'token', refreshToken: 'token', expiresIn: 900 });
     });
   });
 

@@ -10,11 +10,15 @@ const AdminPortal = dynamic(
   { ssr: false, loading: () => <RemoteLoader /> },
 );
 
-function MissingRemote() {
+function MissingRemote(_props: { role?: string | undefined }) {
   return (
     <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-400">
       <p className="text-lg font-medium">Admin module</p>
-      <p className="text-sm mt-1">Start the <code className="font-mono">web-admin</code> remote on port 3003 to load this module.</p>
+      <p className="text-sm mt-1">
+        The <code className="font-mono">web-admin</code> module failed to load. With
+        <code className="font-mono"> ENABLE_MODULE_FEDERATION=true</code>, check that the remote is
+        running on port 3003.
+      </p>
     </div>
   );
 }
@@ -30,13 +34,14 @@ function Unauthorized() {
 
 export default function AdminPage() {
   const permissions = useAppSelector((s) => s.entitlements.permissions);
+  const role = useAppSelector((s) => s.entitlements.role);
 
   if (!permissions.includes('admin:users')) return <Unauthorized />;
 
   return (
     <RemoteBoundary name="Admin">
       <Suspense fallback={<RemoteLoader />}>
-        <AdminPortal />
+        <AdminPortal role={role ?? undefined} />
       </Suspense>
     </RemoteBoundary>
   );

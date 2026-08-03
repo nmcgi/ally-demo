@@ -15,7 +15,7 @@ export default function AdminPortal({ role }: Props) {
   const isAdmin = role === 'admin';
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h1 className="text-2xl font-bold text-gray-900">Admin portal</h1>

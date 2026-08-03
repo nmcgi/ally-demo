@@ -32,6 +32,13 @@ pnpm test
 # Local Postgres (required for api dev/e2e)
 pnpm db:up     # start
 pnpm db:down   # stop
+
+# Seed demo data — one starter login per role (admin@ally.com, support@ally.com,
+# demo@ally.com, all with password AllyFinancial123!) plus a checking/savings
+# pair with sample transactions for every user that has none. Idempotent;
+# re-run after registering a user, since registration alone creates no accounts.
+# Starter users are defined in SEED_USERS in apps/api/src/database/seed.ts.
+pnpm db:seed
 ```
 
 ### API-specific (`apps/api`)
@@ -124,6 +131,8 @@ packages/tsconfig/base.json          ← strict, bundler moduleResolution
 | `JWT_SECRET` | Yes | Access token signing key |
 | `JWT_REFRESH_SECRET` | Yes | Refresh token signing key (separate secret) |
 | `NODE_ENV` | No | `development` enables TypeORM query logging and disables SSL |
+| `DB_LOGGING` | No | Overrides the `NODE_ENV` query-logging default; `db:seed` sets `false` |
+| `CORS_ORIGINS` | No | Comma-separated browser origins; defaults to the local dev ports |
 | `STEP_FUNCTIONS_LOAN_ARN` | No | If unset, loan `submit()` skips Step Functions (safe for local dev) |
 | `AWS_REGION` | No | Defaults to `us-east-1` |
 

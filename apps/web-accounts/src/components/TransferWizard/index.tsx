@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Account } from '@ally/shared-types';
 import { useTransferStore } from '@/store/transferStore';
 import { TransferForm } from './TransferForm';
@@ -12,6 +13,24 @@ interface TransferWizardProps {
 export function TransferWizard({ accounts }: TransferWizardProps) {
   const { isOpen, step, close, reset, resultTransactionId, errorMessage } = useTransferStore();
 
+  // Close on Escape and stop the page behind the overlay from scrolling.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') close();
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen, close]);
+
   if (!isOpen) return null;
 
   const STEP_TITLES: Record<typeof step, string> = {
@@ -22,12 +41,25 @@ export function TransferWizard({ accounts }: TransferWizardProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/40 backdrop-blur-sm"
+      onClick={close}
+    >
+      {/* Stop clicks inside the panel from reaching the backdrop handler. */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transfer-wizard-title"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md my-auto bg-white rounded-2xl shadow-xl"
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">{STEP_TITLES[step]}</h2>
+          <h2 id="transfer-wizard-title" className="text-base font-semibold text-gray-900">
+            {STEP_TITLES[step]}
+          </h2>
           <button
             onClick={close}
+            aria-label="Close"
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,8 +75,8 @@ export function TransferWizard({ accounts }: TransferWizardProps) {
 
           {step === 'success' && (
             <div className="text-center space-y-4">
-              <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
-                <svg className="h-7 w-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 ring-8 ring-emerald-50 flex items-center justify-center">
+                <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -67,8 +99,8 @@ export function TransferWizard({ accounts }: TransferWizardProps) {
 
           {step === 'error' && (
             <div className="text-center space-y-4">
-              <div className="mx-auto w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
-                <svg className="h-7 w-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 ring-8 ring-red-50 flex items-center justify-center">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>

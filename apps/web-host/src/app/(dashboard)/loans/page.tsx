@@ -13,7 +13,11 @@ function MissingRemote() {
   return (
     <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center text-gray-400">
       <p className="text-lg font-medium">Loans module</p>
-      <p className="text-sm mt-1">Start the <code className="font-mono">web-loans</code> remote on port 3002 to load this module.</p>
+      <p className="text-sm mt-1">
+        The <code className="font-mono">web-loans</code> module failed to load. With
+        <code className="font-mono"> ENABLE_MODULE_FEDERATION=true</code>, check that the remote is
+        running on port 3002.
+      </p>
     </div>
   );
 }

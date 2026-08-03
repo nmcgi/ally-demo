@@ -8,8 +8,9 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "db:up": "docker-compose up -d db",
-    "db:down": "docker-compose down"
+    "db:seed": "pnpm --filter @ally/api db:seed",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

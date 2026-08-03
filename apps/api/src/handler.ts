@@ -5,12 +5,15 @@ import serverlessExpress from '@vendia/serverless-express';
 import { Handler, Context, Callback } from 'aws-lambda';
 import { AppModule } from './app.module';
 import { StructuredLogger } from './common/logging/structured.logger';
+import { corsOptions } from './common/cors/cors.config';
 
 let cachedHandler: Handler;
 
 async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(new StructuredLogger());
+
+  app.enableCors(corsOptions());
 
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),

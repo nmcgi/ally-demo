@@ -34,9 +34,7 @@ export function TransactionList({ accountId }: TransactionListProps) {
 
   if (!data || data.data.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-200 p-10 text-center text-gray-400 text-sm">
-        No transactions yet.
-      </div>
+      <div className="py-10 text-center text-gray-400 text-sm">No transactions yet.</div>
     );
   }
 

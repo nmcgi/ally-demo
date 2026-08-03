@@ -32,7 +32,7 @@ export class RemoteBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
       return (
-        <div className="flex flex-col items-center justify-center min-h-64 gap-3 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-500">
           <p className="text-sm">
             The <span className="font-medium">{this.props.name}</span> module failed to load.
           </p>
@@ -52,7 +52,7 @@ export class RemoteBoundary extends Component<Props, State> {
 
 export function RemoteLoader() {
   return (
-    <div className="flex items-center justify-center min-h-64">
+    <div className="flex items-center justify-center py-24" role="status" aria-label="Loading">
       <Spinner size="lg" />
     </div>
   );

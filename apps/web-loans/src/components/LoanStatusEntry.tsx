@@ -8,7 +8,7 @@ interface Props {
 
 export default function LoanStatusEntry({ loanId }: Props) {
   return (
-    <div className="max-w-xl mx-auto p-4 sm:p-6">
+    <div className="max-w-2xl mx-auto">
       <LoanStatusPanel loanId={loanId} />
     </div>
   );
